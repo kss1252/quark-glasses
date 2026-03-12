@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夸克眼镜使用教程</title>
+    <title>夸克眼镜使用教程 - PDF图片查看器</title>
     <style>
         * {
             margin: 0;
@@ -20,7 +20,7 @@
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             min-height: 100vh;
@@ -31,7 +31,11 @@
         .header {
             text-align: center;
             color: white;
-            padding: 40px 0;
+            padding: 30px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
         }
         
         .header h1 {
@@ -45,24 +49,89 @@
             opacity: 0.9;
         }
         
-        .content-card {
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+        }
+        
+        .sidebar {
+            width: 250px;
             background: white;
             border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 600px; /* 与右侧盒子高度同步 */
+        }
+        
+        .content-area {
             flex: 1;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            height: 600px; /* 与左侧保持一致的高度 */
+        }
+        
+        .thumbnail-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* 适当增加间距改善可读性 */
+            overflow-y: auto; /* 添加垂直滚动条 */
+            flex: 1;
+            max-height: 500px; /* 增加最大高度以充分利用600px空间 */
+        }
+        
+        .thumbnail {
+            padding: 10px; /* 适当增加内边距改善视觉效果 */
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            border: 2px solid transparent;
+            min-height: 80px; /* 增加最小高度以充分利用空间 */
+        }
+        
+        .thumbnail:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+        
+        .thumbnail.active {
+            background: #667eea;
+            color: white;
+            border-color: #5a67d8;
+        }
+        
+        .thumbnail img {
+            max-width: 100%;
+            height: 60px; /* 增加图片高度以充分利用空间 */
+            object-fit: contain; /* 改为contain保持比例 */
+            border-radius: 4px;
+            margin-bottom: 5px; /* 适当增加底部边距 */
+        }
+        
+        .thumbnail .page-number {
+            font-weight: bold;
+            font-size: 10px; /* 进一步缩小字体 */
+        }
+        
+        .pdf-viewer {
+            height: 100%;
             display: flex;
             flex-direction: column;
         }
         
-        .navigation {
+        .viewer-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
             padding: 20px;
             background: #f8f9fa;
-            border-radius: 10px;
+            border-bottom: 1px solid #e9ecef;
         }
         
         .nav-btn {
@@ -74,6 +143,9 @@
             cursor: pointer;
             font-size: 16px;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .nav-btn:hover:not(:disabled) {
@@ -93,61 +165,49 @@
             color: #667eea;
         }
         
-        .content-area {
-            flex: 1;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            overflow-y: auto;
-            max-height: 500px;
+        .zoom-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
         
-        .page-title {
-            color: #667eea;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e9ecef;
-            font-size: 1.5rem;
-        }
-        
-        .page-content {
-            line-height: 1.8;
-            font-size: 16px;
-        }
-        
-        .page-content p {
-            margin-bottom: 15px;
-            text-align: justify;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 18px;
-        }
-        
-        .error {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .footer {
-            text-align: center;
+        .zoom-btn {
+            background: #6c757d;
             color: white;
-            padding: 20px 0;
-            margin-top: 20px;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .zoom-btn:hover {
+            background: #5a6268;
+        }
+        
+        .pdf-image-container {
+            flex: 1;
+            display: flex;
+            align-items: flex-start; /* 改为顶部对齐 */
+            justify-content: center;
+            padding: 20px; /* 减少内边距 */
+            overflow: auto;
+        }
+        
+        .pdf-image {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .pdf-image.zoomed {
+            transform: scale(1.5);
         }
         
         .quick-nav {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
+            display: none; /* 隐藏快速导航区域 */
         }
         
         .page-btn {
@@ -157,6 +217,7 @@
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 14px;
         }
         
         .page-btn:hover {
@@ -169,23 +230,107 @@
             color: white;
         }
         
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 20px 0;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
             }
             
-            .header h1 {
-                font-size: 2rem;
+            .main-content {
+                flex-direction: column;
             }
             
-            .navigation {
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .thumbnail-list {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+            
+            .thumbnail {
+                min-width: 120px;
+            }
+            
+            .viewer-controls {
                 flex-direction: column;
                 gap: 15px;
             }
             
-            .content-area {
-                max-height: 400px;
+            .pdf-image-container {
+                padding: 20px;
             }
+        }
+        
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 全屏模式 */
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fullscreen .pdf-image {
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        
+        .fullscreen-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .fullscreen-btn:hover {
+            background: #218838;
         }
     </style>
 </head>
@@ -193,112 +338,108 @@
     <div class="container">
         <div class="header">
             <h1>夸克眼镜使用教程</h1>
-            <p>完整的使用指南和操作说明</p>
+            <p>PDF图片浏览 - 完整的使用指南</p>
         </div>
         
-        <div class="content-card">
-            <div class="navigation">
-                <button class="nav-btn" onclick="prevPage()" id="prevBtn">⬅️ 上一页</button>
-                <div class="page-info">
-                    第 <span id="currentPage">1</span> 页 / 共 <span id="totalPages">0</span> 页
+        <div class="main-content">
+            <div class="sidebar">
+                <h3 style="margin-bottom: 15px; color: #667eea; text-align: center;">页面缩略图 (共53页)</h3>
+                <div style="font-size: 12px; color: #666; text-align: center; margin-bottom: 10px;">显示7页，滚动查看更多</div>
+                <div class="thumbnail-list" id="thumbnailList">
+                    <!-- 缩略图将通过JavaScript生成 -->
                 </div>
-                <button class="nav-btn" onclick="nextPage()" id="nextBtn">下一页 ➡️</button>
             </div>
             
-            <div class="quick-nav" id="quickNav">
-                <!-- 快速导航按钮将通过JavaScript生成 -->
-            </div>
-            
-            <div class="content-area" id="contentArea">
-                <div class="loading">
-                    <p>正在加载PDF内容...</p>
+            <div class="content-area">
+                <div class="pdf-viewer">
+                    <div class="viewer-controls">
+                        <button class="nav-btn" onclick="prevPage()" id="prevBtn">
+                            <span>⬅️</span> 上一页
+                        </button>
+                        
+                        <div class="page-info">
+                            第 <span id="currentPage">1</span> 页 / 共 <span id="totalPages">0</span> 页
+                        </div>
+                        
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomOut()">缩小</button>
+                            <span id="zoomLevel">100%</span>
+                            <button class="zoom-btn" onclick="zoomIn()">放大</button>
+                            <button class="fullscreen-btn" onclick="toggleFullscreen()">全屏</button>
+                        </div>
+                        
+                        <button class="nav-btn" onclick="nextPage()" id="nextBtn">
+                            下一页 <span>➡️</span>
+                        </button>
+                    </div>
+                    
+                    <div class="pdf-image-container" id="pdfImageContainer">
+                        <!-- 图片将通过JavaScript动态加载 -->
+                    </div>
+                    
+                    <div class="quick-nav" id="quickNav">
+                        <!-- 快速导航按钮将通过JavaScript生成 -->
+                    </div>
                 </div>
             </div>
         </div>
         
         <div class="footer">
             <p>© 2025 夸克眼镜使用教程展示网站</p>
-            <p>使用键盘 ← → 箭头键可以快速翻页</p>
+            <p>使用键盘 ← → 箭头键可以快速翻页 | 鼠标滚轮缩放 | 双击图片全屏</p>
         </div>
     </div>
 
     <script>
-        // 页面数据
+        // 当前状态
         let currentPage = 1;
-        let totalPages = 0;
-        let pdfContent = [];
+        let totalPages = 53; // 实际图片数量
+        let currentZoom = 1;
+        let isFullscreen = false;
 
-        // 直接嵌入PDF内容，避免文件加载问题
-        const pdfData = {
-            "title": "夸克眼镜使用教程",
-            "totalPages": 8,
-            "pages": [
-                {
-                    "page": 1,
-                    "content": "夸克眼镜使用教程\n\n第一章：产品介绍\n\n夸克眼镜是一款创新的智能眼镜产品，集成了先进的光学技术和智能功能。\n\n产品特点：\n• 轻量化设计，佩戴舒适\n• 高清显示技术\n• 智能交互功能\n• 长续航电池\n\n适用人群：\n- 需要长时间使用电子设备的人群\n- 对视觉保护有特殊需求的人群\n- 追求科技时尚的消费者"
-                },
-                {
-                    "page": 2,
-                    "content": "第二章：开箱与初次使用\n\n开箱清单：\n1. 夸克眼镜主体\n2. 充电线（Type-C接口）\n3. 使用说明书\n4. 清洁布\n5. 收纳盒\n\n初次使用步骤：\n1. 检查产品完整性\n2. 为眼镜充电（首次使用建议充满电）\n3. 下载配套APP\n4. 完成设备配对\n5. 进行个性化设置\n\n注意事项：\n• 请勿在强光直射下使用\n• 避免剧烈碰撞\n• 定期清洁镜片"
-                },
-                {
-                    "page": 3,
-                    "content": "第三章：基本操作\n\n开关机操作：\n• 长按电源键3秒开机\n• 长按电源键5秒关机\n\n音量调节：\n• 右侧触摸板上下滑动调节音量\n• 双击触摸板静音/取消静音\n\n亮度调节：\n• 左侧触摸板上下滑动调节亮度\n• 支持自动亮度调节\n\n语音助手：\n• 长按触摸板唤醒语音助手\n• 支持语音控制各项功能"
-                },
-                {
-                    "page": 4,
-                    "content": "第四章：APP连接与设置\n\nAPP下载：\n• 安卓用户：应用商店搜索\"夸克眼镜\"\n• 苹果用户：App Store搜索\"夸克眼镜\"\n\n连接步骤：\n1. 打开手机蓝牙\n2. 打开夸克眼镜APP\n3. 在设备列表中选择\"夸克眼镜\"\n4. 确认配对码并完成连接\n\n主要功能设置：\n• 显示模式调节\n• 通知管理\n• 健康提醒设置\n• 个性化主题\n• 固件更新"
-                },
-                {
-                    "page": 5,
-                    "content": "第五章：高级功能\n\nAR增强现实功能：\n• 支持AR导航\n• 实时信息显示\n• 虚拟物体交互\n\n健康监测：\n• 用眼时间统计\n• 疲劳提醒\n• 姿势矫正提醒\n\n多设备协同：\n• 支持同时连接多个设备\n• 无缝切换连接\n• 跨设备文件传输"
-                },
-                {
-                    "page": 6,
-                    "content": "第六章：保养与维护\n\n日常清洁：\n• 使用专用清洁布擦拭镜片\n• 避免使用化学清洁剂\n• 定期清洁充电接口\n\n充电注意事项：\n• 使用原装充电器\n• 避免过度充电\n• 建议在15-25°C环境下充电\n\n存储要求：\n• 存放在干燥环境中\n• 避免高温和潮湿\n• 使用原装收纳盒"
-                },
-                {
-                    "page": 7,
-                    "content": "第七章：故障排除\n\n常见问题解决方案：\n\n1. 无法开机\n• 检查电量是否充足\n• 尝试充电30分钟后再开机\n• 重置设备（长按电源键15秒）\n\n2. 连接问题\n• 重启手机蓝牙\n• 删除设备后重新配对\n• 更新APP到最新版本\n\n3. 显示异常\n• 检查镜片清洁度\n• 重启设备\n• 恢复出厂设置"
-                },
-                {
-                    "page": 8,
-                    "content": "第八章：技术规格与保修\n\n技术规格：\n• 显示屏：0.5英寸Micro OLED\n• 分辨率：1920×1080\n• 刷新率：60Hz\n• 电池容量：500mAh\n• 续航时间：6小时\n• 充电时间：2小时\n• 重量：45g\n\n保修政策：\n• 保修期限：1年\n• 保修范围：非人为损坏\n• 服务热线：400-xxx-xxxx\n• 官方网站：www.quarkglasses.com\n\n感谢您选择夸克眼镜！"
-                }
-            ]
+        // 页面加载完成后立即初始化
+        window.onload = function() {
+            initializeViewer();
         };
 
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeContent();
-        });
-
-        function initializeContent() {
-            // 使用直接嵌入的数据
-            pdfContent = pdfData.pages;
-            totalPages = pdfData.totalPages;
-            
+        function initializeViewer() {
             document.getElementById('totalPages').textContent = totalPages;
             
-            // 生成快速导航按钮
-            generateQuickNav();
-            
-            // 显示第一页
+            // 立即显示第一页图片
             displayPage(1);
+            
+            // 生成缩略图列表
+            generateThumbnails();
+            
+            // 不再生成快速导航（已隐藏）
+            
+            // 添加键盘快捷键
+            setupKeyboardShortcuts();
+            
+            // 添加鼠标滚轮缩放
+            setupMouseWheelZoom();
         }
 
-        function generateQuickNav() {
-            const quickNav = document.getElementById('quickNav');
-            quickNav.innerHTML = '';
+        function generateThumbnails() {
+            const thumbnailList = document.getElementById('thumbnailList');
+            thumbnailList.innerHTML = '';
             
             for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
-                btn.className = 'page-btn';
-                btn.textContent = i;
-                btn.onclick = () => displayPage(i);
-                quickNav.appendChild(btn);
+                const thumbnail = document.createElement('div');
+                thumbnail.className = 'thumbnail';
+                const imageName = `page_${String(i).padStart(3, '0')}.png`;
+                
+                thumbnail.innerHTML = `
+                    <img src="${imageName}" alt="第${i}页" loading="lazy" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjExMDAiIHZpZXdCb3g9IjAgMCA4MDAgMTEwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSIxMTAwIiBmaWxsPSIjRjhGOUZBIi8+Cjx0ZXh0IHg9IjUwIiB5PSI1MDAiIGZpbGw9IiMzMzMiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCI+5Zu+54mH5Y+v6IO9PC90ZXh0Pgo8L3N2Zz4K'">
+                    <div class="page-number">第${i}页</div>
+                    <div style="font-size: 12px; color: #666;">${imageName}</div>
+                `;
+                thumbnail.onclick = () => displayPage(i);
+                thumbnailList.appendChild(thumbnail);
             }
         }
+
+        // 快速导航功能已移除
 
         function displayPage(pageNumber) {
             if (pageNumber < 1 || pageNumber > totalPages) return;
@@ -310,51 +451,46 @@
             document.getElementById('prevBtn').disabled = currentPage === 1;
             document.getElementById('nextBtn').disabled = currentPage === totalPages;
             
-            // 更新快速导航按钮状态
-            updateQuickNav();
+            // 更新缩略图状态
+            updateThumbnails();
             
-            // 显示内容
-            const contentArea = document.getElementById('contentArea');
-            const pageData = pdfContent[pageNumber - 1];
+            // 不再更新快速导航状态（已隐藏）
             
-            contentArea.innerHTML = `
-                <h2 class="page-title">第${pageNumber}页</h2>
-                <div class="page-content">${formatContent(pageData.content)}</div>
+            // 显示图片
+            const container = document.getElementById('pdfImageContainer');
+            const imageName = `page_${String(pageNumber).padStart(3, '0')}.png`;
+            
+            container.innerHTML = `
+                <img src="${imageName}" 
+                     alt="第${pageNumber}页" 
+                     class="pdf-image fade-in" 
+                     id="currentPdfImage"
+                     ondblclick="toggleFullscreen()"
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjExMDAiIHZpZXdCb3g9IjAgMCA4MDAgMTEwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSIxMTAwIiBmaWxsPSIjRjhGOUZBIi8+Cjx0ZXh0IHg9IjUwIiB5PSI1MDAiIGZpbGw9IiMzMzMiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCI+5Zu+54mH5Y+v6IO9PC90ZXh0Pgo8L3N2Zz4K'">
             `;
             
-            // 滚动到顶部
-            contentArea.scrollTop = 0;
+            // 应用当前缩放级别
+            applyZoom();
+            
+            // 添加加载完成后的动画
+            const img = document.getElementById('currentPdfImage');
+            img.onload = function() {
+                this.classList.add('fade-in');
+            };
         }
 
-        function updateQuickNav() {
-            const buttons = document.querySelectorAll('.page-btn');
-            buttons.forEach((btn, index) => {
+        function updateThumbnails() {
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            thumbnails.forEach((thumb, index) => {
                 if (index + 1 === currentPage) {
-                    btn.classList.add('active');
+                    thumb.classList.add('active');
                 } else {
-                    btn.classList.remove('active');
+                    thumb.classList.remove('active');
                 }
             });
         }
 
-        function formatContent(content) {
-            if (!content) return '<p>本页无内容</p>';
-            
-            // 格式化文本：将换行转换为段落
-            let formatted = content
-                .split('\n\n')  // 按空行分割段落
-                .map(paragraph => {
-                    if (paragraph.trim()) {
-                        // 处理项目符号和编号
-                        paragraph = paragraph.replace(/\n/g, '<br>');
-                        return `<p>${paragraph}</p>`;
-                    }
-                    return '';
-                })
-                .join('');
-            
-            return formatted || '<p>本页无内容</p>';
-        }
+        // 快速导航状态更新功能已移除
 
         function prevPage() {
             if (currentPage > 1) {
@@ -368,14 +504,82 @@
             }
         }
 
-        // 键盘快捷键
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'ArrowLeft') {
-                prevPage();
-            } else if (event.key === 'ArrowRight') {
-                nextPage();
+        function zoomIn() {
+            if (currentZoom < 3) {
+                currentZoom += 0.1;
+                applyZoom();
             }
-        });
+        }
+
+        function zoomOut() {
+            if (currentZoom > 0.5) {
+                currentZoom -= 0.1;
+                applyZoom();
+            }
+        }
+
+        function applyZoom() {
+            const img = document.getElementById('currentPdfImage');
+            if (img) {
+                img.style.transform = `scale(${currentZoom})`;
+                document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
+            }
+        }
+
+        function toggleFullscreen() {
+            const img = document.getElementById('currentPdfImage');
+            if (!img) return;
+            
+            if (!isFullscreen) {
+                // 进入全屏
+                const fullscreenDiv = document.createElement('div');
+                fullscreenDiv.className = 'fullscreen';
+                fullscreenDiv.innerHTML = `
+                    <img src="${img.src}" alt="全屏模式" style="max-width: 90vw; max-height: 90vh;">
+                `;
+                fullscreenDiv.onclick = toggleFullscreen;
+                document.body.appendChild(fullscreenDiv);
+                isFullscreen = true;
+            } else {
+                // 退出全屏
+                const fullscreenDiv = document.querySelector('.fullscreen');
+                if (fullscreenDiv) {
+                    fullscreenDiv.remove();
+                }
+                isFullscreen = false;
+            }
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'ArrowLeft') {
+                    prevPage();
+                } else if (event.key === 'ArrowRight') {
+                    nextPage();
+                } else if (event.key === 'Escape' && isFullscreen) {
+                    toggleFullscreen();
+                } else if (event.key === '+' || event.key === '=') {
+                    zoomIn();
+                } else if (event.key === '-') {
+                    zoomOut();
+                }
+            });
+        }
+
+        function setupMouseWheelZoom() {
+            const container = document.getElementById('pdfImageContainer');
+            container.addEventListener('wheel', function(event) {
+                if (event.ctrlKey) {
+                    event.preventDefault();
+                    if (event.deltaY < 0) {
+                        zoomIn();
+                    } else {
+                        zoomOut();
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>
+    
